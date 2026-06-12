@@ -1,0 +1,36 @@
+# Age / sops private keys — NEVER commit these
+key.txt
+keys.txt
+*.age
+!*.age.pub
+key.age
+*.agekey
+
+# Decrypted sops output / plaintext secrets
+*.dec
+*.decrypted
+secrets/*.dec.yaml
+secrets/plaintext*
+
+# Private keys
+*.key
+*.pem.key
+id_rsa
+id_ed25519
+!secrets/ssh_pubkeys/*.pub
+*.p12
+*.pfx
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# NixOS build / result artifacts
+result
+result-*
+
+# Editor / OS cruft
+*.swp
+*.swo
+.DS_Store

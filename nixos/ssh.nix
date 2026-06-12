@@ -1,0 +1,48 @@
+{ lib, owner, ... }:
+
+let
+  # Peer pubkeys live under secrets/ssh_pubkeys/*.pub (plaintext —
+  # public keys aren't secrets). Each file is one pubkey written by
+  # `nix run .#peers-bootstrap` on the corresponding client host. We
+  # glob them in here so adding a new client never requires editing
+  # this file — the client runs bootstrap, pushes the .pub, every
+  # NixOS host picks it up on the next rebuild.
+  peersPubkeysDir = ../secrets/ssh_pubkeys;
+  peersPubkeys =
+    let
+      files = builtins.filter (lib.hasSuffix ".pub") (lib.attrNames (builtins.readDir peersPubkeysDir));
+    in
+    map (f: lib.fileContents "${peersPubkeysDir}/${f}") files;
+in
+{
+  services.openssh = {
+    enable = true;
+    settings = {
+      # SECURITY: Disable password authentication - use SSH keys only
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+      PubkeyAuthentication = true;
+
+      # Additional SSH hardening
+      MaxAuthTries = 3;
+      ClientAliveInterval = 300;
+      ClientAliveCountMax = 2;
+      X11Forwarding = false;
+      AllowTcpForwarding = "no";
+      AllowStreamLocalForwarding = "no";
+      GatewayPorts = "no";
+      AllowUsers = [ "${owner.name}" ];
+    };
+    # Use extraConfig to allow authorized_keys from SOPS-managed files
+    extraConfig = ''
+      AuthorizedKeysFile /etc/ssh/authorized_keys.d/%u /home/${owner.name}/.ssh/authorized_keys /home/${owner.name}/.ssh/id_rsa_personal.pub
+    '';
+  };
+
+  users.users.${owner.name}.openssh.authorizedKeys.keys = [
+    # TODO: Update this to be _your_ public key. This will allow you to login via ssh before passwords get properly decrypted
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKg05eU7fFcvs6KUgwYRHjb6jNgBEwpboR/Uj09qCUnl awells@work"
+  ]
+  ++ peersPubkeys;
+}
