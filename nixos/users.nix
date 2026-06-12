@@ -5,6 +5,8 @@
 }:
 
 {
+  # This setting is necessary to ensure the password file gets read upon a rebuild (once SOPS can be decrypted)
+  users.mutableUsers = false;
   users.users.${owner.name} = {
     isNormalUser = true;
     description = owner.fullName;

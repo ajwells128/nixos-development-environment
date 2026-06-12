@@ -154,10 +154,12 @@ sudo ln -sf "/home/$USERNAME/projects/personal/nix" /mnt/etc/nixos
 log "Using filesystem labels: nixos (btrfs root) and nixos-boot (EFI)"
 
 # Step 8: install
-log "Installing NixOS for host $TARGET_HOSTNAME"
+log "Installing NixOS for host $TARGET_HOSTNAME. If you see SSL errors, don't panic quite yet, let them pass"
+log "If (when) prompted, enter a _temporary_ password for root. It will be overwritten later."
 # TODO: If this encounters errors, use specify the cert bundle
-# sudo NIX_SSL_CERT_FILE=/mnt/home/$USERNAME/projects/personal/nix/bundle.crt nixos-install --root /mnt --flake "/mnt/home/$USERNAME/projects/personal/nix#$TARGET_HOSTNAME"
-sudo nixos-install --root /mnt --flake "/mnt/home/$USERNAME/projects/personal/nix#$TARGET_HOSTNAME"
+# note: it appears they might both play an important role? Keep retrying if at first you fail, and alternate which one you use...
+sudo nixos-install --root /mnt --flake "/mnt/home/$USERNAME/projects/personal/nix#$TARGET_HOSTNAME" \
+|| sudo NIX_SSL_CERT_FILE=/mnt/home/$USERNAME/projects/personal/nix/bundle.crt nixos-install --root /mnt --flake "/mnt/home/$USERNAME/projects/personal/nix#$TARGET_HOSTNAME"
 
 log "Installation completed successfully!"
 

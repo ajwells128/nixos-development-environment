@@ -58,6 +58,26 @@ If you elected for a private repo, you'll need to `scp` your repo over. If you d
 
 See [troubleshooting](#network-issues) for the actual final nixos-install line if you encounter a problem.
 
+### Phase 5: Bootstrap sops-nix
+At this point we need to finish [bootstrapping SOPS](https://github.com/andreaugustoaragao/nix/blob/main/SOPS-SETUP-GUIDE.md#-add-a-new-nixos-host).
+
+You don't have a user password yet and so can't run sudo. Therefore, read the host's age pubkey like so:
+
+```
+su
+<enter temporary root password from installation>
+nix-shell -p age --run 'age-keygen -y /var/lib/sops-nix/key.txt'
+```
+
+Then proceed to add the age line to your `.sops.yaml` file.
+
+`sops-edit updatekeys secrets/secrets.yaml` will work on a NixOS host (where sops-edit has been defined), but if you're still in bootstrapping mode you can run `sops updatekeys secrets/secrets.yaml`. Be aware on MacOS you may need to specify the age key file with (your version of) `SOPS_AGE_KEY_FILE=/Users/awells/.config/sops/age/keys.txt`
+
+Commit and _push_ your changes. In the VM, pull your nix configuration to get the updated secrets file.
+
+Do the nixos-rebuild. The output should indicate that sops decrypted successfully. Your user should now have a password set, and if you try to `su` to root using the temporary password, that should fail.
+
+
 ## Troubleshooting
 ### Network Issues
 I can't remember the exact symptom, but zscaler was preventing the download of some files via curl or something. I used the following syntax to ensure the bundle of certs was used when installing:
