@@ -71,49 +71,8 @@ else
     git clone --depth=1 "$FLAKE_REPO" "$TMP_FLAKE" >/dev/null
 fi
 
-# Step 1: discover candidate hosts. A candidate is a directory under
-# hardware/ whose hardware-configuration.nix references
-# /dev/disk/by-label/nixos (this installer's btrfs layout) and lacks
-# any LUKS configuration, AND has a matching entry in machines.toml.
-discover_candidates() {
-    local hwc host
-    for hwc in "$TMP_FLAKE"/hardware/*/hardware-configuration.nix; do
-        [[ -f $hwc ]] || continue
-        host="$(basename "$(dirname "$hwc")")"
-        grep -q '/dev/disk/by-label/nixos' "$hwc" || continue
-        ! grep -qE 'luks\.|cryptroot' "$hwc" || continue
-        grep -q "^\[machines\.${host}\]" "$TMP_FLAKE/machines.toml" || continue
-        echo "$host"
-    done
-}
-
-mapfile -t candidates < <(discover_candidates)
-if [[ ${#candidates[@]} -eq 0 ]]; then
-    error "no compatible hosts in $FLAKE_REPO (need hardware-configuration.nix using /dev/disk/by-label/nixos and no LUKS)"
-fi
-
-# Step 2: pick a host. Honor TARGET_HOSTNAME if it's a candidate;
-# otherwise prompt.
-if [[ -n "${TARGET_HOSTNAME:-}" ]]; then
-    found=0
-    for h in "${candidates[@]}"; do
-        [[ $h == "$TARGET_HOSTNAME" ]] && { found=1; break; }
-    done
-    [[ $found -eq 1 ]] || error "TARGET_HOSTNAME='$TARGET_HOSTNAME' is not a candidate. Available: ${candidates[*]}"
-    log "TARGET_HOSTNAME=$TARGET_HOSTNAME (from env)"
-else
-    echo
-    echo "Available machines for this installer (btrfs root, no LUKS):"
-    for i in "${!candidates[@]}"; do
-        printf "  %d) %s\n" "$((i + 1))" "${candidates[$i]}"
-    done
-    echo
-    read -p "Pick a machine [1-${#candidates[@]}]: " -r choice
-    [[ $choice =~ ^[0-9]+$ ]] || error "expected a number"
-    (( choice >= 1 && choice <= ${#candidates[@]} )) || error "out of range"
-    TARGET_HOSTNAME="${candidates[$((choice - 1))]}"
-    log "selected: $TARGET_HOSTNAME"
-fi
+# TODO: Update this to be your flake hostname
+TARGET_HOSTNAME=vmware-work
 
 # Final summary + confirmation
 echo
@@ -196,6 +155,8 @@ log "Using filesystem labels: nixos (btrfs root) and nixos-boot (EFI)"
 
 # Step 8: install
 log "Installing NixOS for host $TARGET_HOSTNAME"
+# TODO: If this encounters errors, use specify the cert bundle
+# sudo NIX_SSL_CERT_FILE=/mnt/home/$USERNAME/projects/personal/nix/bundle.crt nixos-install --root /mnt --flake "/mnt/home/$USERNAME/projects/personal/nix#$TARGET_HOSTNAME"
 sudo nixos-install --root /mnt --flake "/mnt/home/$USERNAME/projects/personal/nix#$TARGET_HOSTNAME"
 
 log "Installation completed successfully!"

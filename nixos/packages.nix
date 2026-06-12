@@ -81,7 +81,7 @@
 
       # Development tools moved to home configuration
     ]
-    ++ lib.optionals (!isServer) [
+    ++ lib.optionals (true) [
       libinput
       pamixer
       brightnessctl
