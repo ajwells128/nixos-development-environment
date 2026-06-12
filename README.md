@@ -38,6 +38,20 @@ Follow [this guide](https://github.com/andreaugustoaragao/nix/blob/main/VM-SETUP
 ### Phase 3: Run the Installer
 If you created a public repo, you should be able to follow the guide with only minimal changes to the script (the repo url, for example).
 
+Updated for this repo:
+```
+# Download (don't pipe to bash — the script needs an interactive stdin
+# for its menu and the destroy-confirmation prompt)
+curl -L https://raw.githubusercontent.com/ajwells128/nixos-development-environment/main/scripts/install-nixos.sh -o /tmp/install.sh
+chmod +x /tmp/install.sh
+
+# Parallels (defaults to /dev/sda)
+/tmp/install.sh
+
+# VMware Fusion
+DISK=/dev/nvme0n1 /tmp/install.sh
+```
+
 If you elected for a private repo, you'll need to `scp` your repo over. If you do that, I recommend that you execute commands from the install script by hand (via `ssh`, for ease of copy-paste) or by making necessary adjustments to the script so that it runs in LOCAL_FLAKE mode.
 
 See [troubleshooting](#network-issues) for the actual final nixos-install line if you encounter a problem.
