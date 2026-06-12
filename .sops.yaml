@@ -7,4 +7,5 @@ creation_rules:
       - age:
           - *admin_key
           - age1wdw7agwzv3htkvzcu57u8nkuqcdxa9nuq2fgpk3gkyqkve703ytsxkm0uh
+          - age1fvx6h32gxf3z4f0p80tqn7eawy25xgydj3ttx0eypaxmagx0wclsfmzgpt
 
