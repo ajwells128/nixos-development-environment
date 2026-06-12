@@ -5,6 +5,8 @@ Recommendation: make it public. If it's not public, you'll simply need to scp it
 ## Make it your own
 Search for TODO's and make all necessary changes.
 
+Also, update [this pubkey or simply remove it, it's not necessary](./secrets/ssh_pubkeys/id_ed25519.pub).
+
 ## SOPS Setup
 
 Reference this [source material](https://github.com/andreaugustoaragao/nix/blob/main/SOPS-SETUP-GUIDE.md) with the following guidelines:
